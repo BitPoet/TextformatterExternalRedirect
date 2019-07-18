@@ -11,7 +11,7 @@ ProcessWire 3
 
 ## Stability
 
-Beta release, close to stable
+Stable
 
 ## Installation
 
@@ -23,6 +23,15 @@ Beta release, close to stable
 - Go into the module settings, enter your target link and optionally check the
   box to open all external links in a new window
 - Configure the textarea fields to use the External Link Redirector textformatter
+
+## Config Options
+
+The following options can be configured in the module's configuration settings:
+
+- Link to prepend (mandatory for module to work)
+- Open in new window (optional): will add ```target='_blank'``` to every link
+- CSS class (optional): will append the entered class(es) if a class attribute is
+  already present or add the class attribute if not
 
 ## License
 
