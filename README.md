@@ -5,15 +5,15 @@ Allows you to rewrite external links in textarea fields at rendering time,
 prepending a custom url (implementation of that URL is not subject of this
 module). Optionally also adds a ```target='blank'``` attribute to the links.
 
-# Compatibility
+## Compatibility
 
 ProcessWire 3
 
-# Stability
+## Stability
 
 Beta release, close to stable
 
-# Installation
+## Installation
 
 - Download the zip archive of this module and extract it to the site/templates
   directory of your ProcessWire installation
@@ -24,6 +24,6 @@ Beta release, close to stable
   box to open all external links in a new window
 - Configure the textarea fields to use the External Link Redirector textformatter
 
-# License
+## License
 
-This module is released under Mozilla Public Lincense. See LICENSE.md for details.
+This module is released under Mozilla Public Lincense. See LICENSE file for details.
