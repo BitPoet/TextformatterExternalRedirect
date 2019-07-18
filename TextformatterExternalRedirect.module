@@ -1,0 +1,113 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire External Link Redirector Textformatter
+ *
+ * Prefixes the URL in each external link with a local URL that redirects to the
+ * original URL after doing whatever it is that it needs to do.
+ *
+ * The URL to prepend is configured in this module's settings
+ * (Backend: Modules -> Configure -> TextformatterExternalRedirect)
+ *
+ * It assumes that the prepended URL ends with a GET parameter and an equal sign,
+ * so it urlencode()s the original URL.
+ *
+ * Example:
+ * Link is <a href='https://processwire.com'>
+ * Prepend URL: /myredirector/?link=
+ * Textformatter generates: <a href='/myredirector/?link=https%3A%2F%2Fprocessire.com'>
+ * 
+ */
+
+class TextformatterExternalRedirect extends Textformatter implements ConfigurableModule {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'External Link Redirect', 
+			'version' => '0.0.5', 
+			'summary' => "Parses links in textareas and prepends a local redirector URL", 
+		); 
+	}
+	
+	public function __construct() {
+		parent::__construct();
+		
+		$this->set("prependUrl", "");
+	}
+
+	public function format(&$str) {
+		$str = trim($str);
+		
+		if(!strlen($str)) return;
+		if(!$this->prependUrl) return;
+		
+		$that = $this;
+		$str = preg_replace_callback(
+			'/(<a[^>]+href=)(["\'])([^"\']*)(\\2)([^>]*)/is',
+			function($matches) use($that) {
+				$match = $matches;
+				// If link is not external, we return the original link
+				if(!$that->isExternalLink($match[3])) return $match[0];
+				
+				if($that->newWindow) {
+					$inserted = false;
+					
+					if(preg_match('/target=["\']/i', $match[2])) {
+						$match[2] = preg_replace('/(target=)(["\'])([^"\']*)\\2/i', '$1$2_blank$2', $match[2]);
+						$inserted = true;
+					}
+					
+					if(!$inserted && preg_match('/target=["\']/i', $match[5])) {
+						$match[5] = preg_replace('/(target=)(["\'])([^"\']*)\\2/i', '$1$2_blank$2', $match[5]);
+						$inserted = true;
+					}
+					
+					if(!$inserted) {
+						$match[5] .= " target='_blank' ";
+						$inserted = true;
+					}
+				}
+								
+				return $match[1] . $match[2] . $that->prependUrl . urlencode($match[3]) . $match[2] . $match[5];
+			},
+			$str
+		);
+	}
+	
+	public function isExternalLink($url) {
+		foreach($this->config->httpHosts as $hostname) {
+			// If the target host is one of our own hostnames,
+			// this link is not external.
+			if(preg_match("~^https?://{$hostname}~i", $url)) return false;
+		}
+		
+		// Otherwise, all http(s) links are definitely external
+		// and get redirected.
+		if(preg_match('~^https?://~i', $url)) return true;
+		
+		// No match, then we have a relative url (internal) or some other
+		// scheme (e.g. mailto) that we don't redirect.
+		return false;
+	}
+	
+	public static function getModuleConfigInputfields($data) {
+		$inputfields = new InputfieldWrapper();
+		
+		$f = wire('modules')->get("InputfieldText");
+		$f->attr('id+name', 'prependUrl');
+		$f->label = __("URL to prepend", __FILE__);
+		$f->description = __("This URL is prepended. It is assumed that it ends with a GET parameter to which the URL-encoded original link will be passed.", __FILE__);
+		if(isset($data["prependUrl"])) $f->attr('value', $data["prependUrl"]);
+		$inputfields->append($f);
+		
+		$f = wire('modules')->get("InputfieldCheckbox");
+		$f->attr('id+name', 'newWindow');
+		$f->label = __("Open in new window", __FILE__);
+		$f->description = __("Check to append/replace target='_blank' so links always open in a new window", __FILE__);
+		if(isset($data["newWindow"]) & $data["newWindow"] == 1) $f->attr('checked', 'checked');
+		$f->attr('value', '1');
+		$inputfields->append($f);
+		
+		return $inputfields;
+	}
+}
