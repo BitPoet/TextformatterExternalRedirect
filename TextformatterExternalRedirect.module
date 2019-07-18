@@ -24,7 +24,7 @@ class TextformatterExternalRedirect extends Textformatter implements Configurabl
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'External Link Redirect', 
-			'version' => '0.0.5', 
+			'version' => '0.0.6', 
 			'summary' => "Parses links in textareas and prepends a local redirector URL", 
 		); 
 	}
@@ -68,6 +68,25 @@ class TextformatterExternalRedirect extends Textformatter implements Configurabl
 					}
 				}
 								
+				if($that->cssClass) {
+					$inserted = false;
+					
+					if(preg_match('/class=["\']/i', $match[2])) {
+						$match[2] = preg_replace('/(class=)(["\'][^"\']*)\\2/i', '$1 ' . $that->cssClass . ' $2', $match[2]);
+						$inserted = true;
+					}
+					
+					if(!$inserted && preg_match('/class=["\']/i', $match[5])) {
+						$match[5] = preg_replace('/(class=)(["\'][^"\']*)\\2/i', '$1 ' . $that->cssClass . ' $2', $match[5]);
+						$inserted = true;
+					}
+					
+					if(!$inserted) {
+						$match[5] .= " class='" . $that->cssClass . "' ";
+						$inserted = true;
+					}
+				}
+
 				return $match[1] . $match[2] . $that->prependUrl . urlencode($match[3]) . $match[2] . $match[5];
 			},
 			$str
@@ -106,6 +125,13 @@ class TextformatterExternalRedirect extends Textformatter implements Configurabl
 		$f->description = __("Check to append/replace target='_blank' so links always open in a new window", __FILE__);
 		if(isset($data["newWindow"]) & $data["newWindow"] == 1) $f->attr('checked', 'checked');
 		$f->attr('value', '1');
+		$inputfields->append($f);
+		
+		$f = wire('modules')->get("InputfieldText");
+		$f->attr('id+name', 'cssClass');
+		$f->label = __("Add CSS class", __FILE__);
+		$f->description = __("If filled, the CSS class(es) entered here will be added to the link", __FILE__);
+		if(isset($data["cssClass"])) $f->attr('value', $data["cssClass"]);
 		$inputfields->append($f);
 		
 		return $inputfields;
