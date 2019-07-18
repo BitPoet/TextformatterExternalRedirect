@@ -33,6 +33,8 @@ class TextformatterExternalRedirect extends Textformatter implements Configurabl
 		parent::__construct();
 		
 		$this->set("prependUrl", "");
+		$this->set("newWindow", 0);
+		$this->set("cssClass", "");
 	}
 
 	public function format(&$str) {
