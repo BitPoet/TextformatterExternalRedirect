@@ -125,7 +125,7 @@ class TextformatterExternalRedirect extends Textformatter implements Configurabl
 		$f->attr('id+name', 'newWindow');
 		$f->label = __("Open in new window", __FILE__);
 		$f->description = __("Check to append/replace target='_blank' so links always open in a new window", __FILE__);
-		if(isset($data["newWindow"]) & $data["newWindow"] == 1) $f->attr('checked', 'checked');
+		if(isset($data["newWindow"]) && $data["newWindow"] == 1) $f->attr('checked', 'checked');
 		$f->attr('value', '1');
 		$inputfields->append($f);
 		
